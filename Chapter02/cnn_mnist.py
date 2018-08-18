@@ -1,5 +1,4 @@
 # https://github.com/aymericdamien/TensorFlow-Examples/blob/master/notebooks/3_NeuralNetworks/neural_network_raw.ipynb
-import numpy as np
 import tensorflow as tf
 
 from tensorflow.examples.tutorials.mnist import input_data
