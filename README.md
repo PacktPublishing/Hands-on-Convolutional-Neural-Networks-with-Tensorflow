@@ -8,9 +8,19 @@ sudo pip install -U pip
 ```
 
 ## Packages to install
+If you already have python 2.7 installed you may refer pip as pip3
 ```bash
-pip install numpy
-pip install matplotlib
-pip install fire
-pip install -U tensorflow
+sudo pip install numpy
+sudo pip install matplotlib
+sudo pip install fire
+sudo pip install -U tensorflow
+sudo pip install jupyter
 ```
+
+## What we got on the repo
+Currently we have all the examples cover on the book:
+* Image Classification
+* Transfer Learning
+* Common Architectures
+* Object Localization, Yolo Loss, Segmentation
+* Good coding practices
