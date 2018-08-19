@@ -1,101 +1,64 @@
-   def build_graph(self): 
+# Reference: https://github.com/mdietrichstein/vgg16-transfer-learning/blob/master/vgg16.py
+import tensorflow as tf
+import numpy as np
 
-   self.__x_ = tf.placeholder("float", shape=[None, 224, 224, 3], name='X') 
+class Vgg16Model:
+    def __init__(self, weights_path='./vgg16.npy'):
+        self.weights = np.load('vgg16.npy', encoding='latin1').item()
+        self.activation_fn = tf.nn.relu
+        self.conv_padding = 'SAME'
+        self.pool_padding = 'SAME'
+        self.use_bias = True
 
-   self.__y_ = tf.placeholder("float", shape=[None, 1000], name='Y') 
+    def build(self, input_tensor, trainable=False):
+        self.conv1_1 = self.conv2d(input_tensor, 'conv1_1', 64, trainable)
+        self.conv1_2 = self.conv2d(self.conv1_1, 'conv1_2', 64, trainable)
 
-   
+        # Max-pooling is performed over a 2 × 2 pixel window, with stride 2.
+        self.max_pool1 = tf.layers.max_pooling2d(self.conv1_2, (2, 2), (2, 2), padding=self.pool_padding)
 
-   with tf.name_scope("model") as scope: 
+        self.conv2_1 = self.conv2d(self.max_pool1, 'conv2_1', 128, trainable)
+        self.conv2_2 = self.conv2d(self.conv2_1, 'conv2_2', 128, trainable)
 
-       conv1_1 = tf.layers.conv2d(inputs=self.__x_, filters=64, kernel_size=[3, 3], 
+        self.max_pool2 = tf.layers.max_pooling2d(self.conv2_2, (2, 2), (2, 2), padding=self.pool_padding)
 
-                                padding="same", activation=tf.nn.relu) 
+        self.conv3_1 = self.conv2d(self.max_pool2, 'conv3_1', 256, trainable)
+        self.conv3_2 = self.conv2d(self.conv3_1, 'conv3_2', 256, trainable)
+        self.conv3_3 = self.conv2d(self.conv3_2, 'conv3_3', 256, trainable)
 
-       conv2_1 = tf.layers.conv2d(inputs=conv1_1, filters=64, kernel_size=[3, 3], 
+        self.max_pool3 = tf.layers.max_pooling2d(self.conv3_3, (2, 2), (2, 2), padding=self.pool_padding)
 
-                                  padding="same", activation=tf.nn.relu) 
+        self.conv4_1 = self.conv2d(self.max_pool3, 'conv4_1', 512, trainable)
+        self.conv4_2 = self.conv2d(self.conv4_1, 'conv4_2', 512, trainable)
+        self.conv4_3 = self.conv2d(self.conv4_2, 'conv4_3', 512, trainable)
 
- 
+        self.max_pool4 = tf.layers.max_pooling2d(self.conv4_3, (2, 2), (2, 2), padding=self.pool_padding)
 
-       pool1 = tf.layers.max_pooling2d(inputs=conv2_1, pool_size=[2, 2], strides=2) 
+        self.conv5_1 = self.conv2d(self.max_pool4, 'conv5_1', 512, trainable)
+        self.conv5_2 = self.conv2d(self.conv5_1, 'conv5_2', 512, trainable)
+        self.conv5_3 = self.conv2d(self.conv5_2, 'conv5_3', 512, trainable)
 
- 
+        self.max_pool5 = tf.layers.max_pooling2d(self.conv5_3, (2, 2), (2, 2), padding=self.pool_padding)
 
-       conv2_1 = tf.layers.conv2d(inputs=pool1, filters=128, kernel_size=[3, 3], 
+        reshaped = tf.reshape(self.max_pool5, shape=(-1, 7 * 7 * 512))
 
-                                padding="same", activation=tf.nn.relu) 
+        self.fc6 = self.fc(reshaped, 'fc6', 4096, trainable)
+        self.fc7 = self.fc(self.fc6, 'fc7', 4096, trainable)
 
-       conv2_2 = tf.layers.conv2d(inputs=conv2_1, filters=128, kernel_size=[3, 3], 
+        self.fc8 = self.fc(self.fc7, 'fc8', 1000, trainable)
 
-                                  padding="same", activation=tf.nn.relu) 
+        self.predictions = tf.nn.softmax(self.fc8, name='predictions')
 
-       pool2 = tf.layers.max_pooling2d(inputs=conv2_2, pool_size=[2, 2], strides=2) 
+    def conv2d(self, layer, name, n_filters, trainable, k_size=3):
+        return tf.layers.conv2d(layer, n_filters, kernel_size=(k_size, k_size),
+                                activation=self.activation_fn, padding=self.conv_padding, name=name, trainable=trainable,
+                                kernel_initializer=tf.constant_initializer(self.weights[name][0], dtype=tf.float32),
+                                bias_initializer=tf.constant_initializer(self.weights[name][1], dtype=tf.float32),
+                                use_bias=self.use_bias)
 
-      conv3_1 = tf.layers.conv2d(inputs=pool2, filters=256, kernel_size=[3, 3], 
-
-                                padding="same", activation=tf.nn.relu) 
-
-       conv3_2 = tf.layers.conv2d(inputs=conv3_1, filters=256, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
-       conv3_3 = tf.layers.conv2d(inputs=conv3_2, filters=256, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
- 
-
-       pool3 = tf.layers.max_pooling2d(inputs=conv3_3, pool_size=[2, 2], strides=2) 
-
- 
-
-       conv4_1 = tf.layers.conv2d(inputs=pool3, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
-       conv4_2 = tf.layers.conv2d(inputs=conv4_1, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
-       conv4_3 = tf.layers.conv2d(inputs=conv4_2, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
- 
-
-       pool4 = tf.layers.max_pooling2d(inputs=conv4_3, pool_size=[2, 2], strides=2) 
-
- 
-
-       conv5_1 = tf.layers.conv2d(inputs=pool4, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
-       conv5_2 = tf.layers.conv2d(inputs=conv5_1, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
-       conv5_3 = tf.layers.conv2d(inputs=conv5_2, filters=512, kernel_size=[3, 3], 
-
-                                  padding="same", activation=tf.nn.relu) 
-
- 
-
-       pool5 = tf.layers.max_pooling2d(inputs=conv5_3, pool_size=[2, 2], strides=2) 
-
- 
-
-       pool5_flat = tf.reshape(pool5, [-1, 7 * 7 * 512]) 
-
-       # FC Layers (can be removed) 
-
-       fc6 = tf.layers.dense(inputs=pool5_flat, units=4096, activation=tf.nn.relu) 
-
-       fc7 = tf.layers.dense(inputs=fc6, units=4096, activation=tf.nn.relu) 
-
-       # Imagenet has 1000 classes 
-
-       fc8 = tf.layers.dense(inputs=fc7, units=1000) 
-
-       self.predictions = tf.nn.softmax(self.fc8, name='predictions') 
+    def fc(self, layer, name, size, trainable):
+        return tf.layers.dense(layer, size, activation=self.activation_fn,
+                               name=name, trainable=trainable,
+                               kernel_initializer=tf.constant_initializer(self.weights[name][0], dtype=tf.float32),
+                               bias_initializer=tf.constant_initializer(self.weights[name][1], dtype=tf.float32),
+                               use_bias=self.use_bias)
