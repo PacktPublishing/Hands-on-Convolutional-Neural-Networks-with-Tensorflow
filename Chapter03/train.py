@@ -8,8 +8,6 @@ import numpy as np
 import os
 import tensorflow as tf
 
-from tf.keras.datasets import cifar10
-
 
 class Train:
     __x_ = []
@@ -123,7 +121,7 @@ class Train:
 
     def train(self, save_dir='./save', batch_size=500):
         # Use keras to load the complete cifar dataset on memory (Not scalable)
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+        (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
 
         # Convert class vectors to binary class matrices.
         y_train = tf.keras.utils.to_categorical(y_train, 10)
