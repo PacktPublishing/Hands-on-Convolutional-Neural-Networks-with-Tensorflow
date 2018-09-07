@@ -62,7 +62,7 @@ With the following software and hardware list you can run all code files present
 
 * Natural Language Processing with TensorFlow [[Packt]](https://www.packtpub.com/application-development/natural-language-processing-tensorflow?utm_source=github&utm_medium=repository&utm_campaign=9781788478311) [[Amazon]](https://www.amazon.com/dp/1788478312)
 
-## Get to Know the Author(s)
+## Get to Know the Authors
 **Iffat Zafar**
 was born in Pakistan. She received her Ph.D. from the Loughborough University in Computer Vision and Machine Learning in 2008. After her Ph.D. in 2008, she worked as research associate at the Department of Computer Science, Loughborough University, for about 4 years. She currently works in the industry as an AI engineer, researching and developing algorithms using Machine Learning and Deep Learning for object detection and general Deep Learning tasks for edge and cloud-based applications.
 
